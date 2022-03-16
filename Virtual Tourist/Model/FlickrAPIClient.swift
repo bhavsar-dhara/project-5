@@ -6,18 +6,16 @@
 //
 
 import Foundation
-import UIKit
 
 class FlickrAPIClient {
     static let key = "3bc19d850bda40ffb8997ac7bf3e0029"
     
     enum Endpoints {
-        
         static let base = "https://www.flickr.com/services/rest/?method=flickr.photos.search"
         
         case searchURLString(Double, Double, Int)
 
-        var urlString: String {
+        var stringValue: String {
             switch self {
                 case .searchURLString(let latitude, let longitude, let pageNum):
                     return Endpoints.base + "&api_key=\(FlickrAPIClient.key)" +
@@ -29,9 +27,37 @@ class FlickrAPIClient {
         }
         
         var url: URL {
-            return URL(string: urlString)!
+            return URL(string: stringValue)!
         }
     }
     
-    
+    class func getPhotosForSelectedLocation(latitude: Double, longitude: Double, pageNum: Int, completion: @escaping ([PhotoResponse]?, Error?) -> Void) {
+        let request = URLRequest(url: Endpoints.searchURLString(latitude, longitude, pageNum).url)
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if error != nil {
+                // Handle error...
+                print("Error response received with getPhotosForSelectedLocation http request")
+                return
+            }
+            if data != nil {
+                print(String(data: data!, encoding: .utf8)!)
+                let decoder = JSONDecoder()
+                do{
+                    let response = try
+                        decoder.decode(SearchResponse.self, from: data!)
+                    print("Data decoded")
+                    DispatchQueue.main.async {
+                        completion(response.photos.photo, nil)
+                    }
+                } catch {
+                    print("Error with the data response received or decoded")
+                    DispatchQueue.main.async {
+                        completion (nil, error)
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
 }
