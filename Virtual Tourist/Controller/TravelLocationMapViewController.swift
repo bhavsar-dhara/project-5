@@ -18,12 +18,8 @@ class TravelLocationMapViewController: UIViewController {
         
         mapView.delegate = self
         
-        FlickrAPIClient.getPhotosForSelectedLocation(latitude: 44.923639311481736, longitude: -93.32636418719535, pageNum: 1, completion: handlePhotosResponse(success:error:))
     }
 
-    func handlePhotosResponse(success: [PhotoResponse]?, error: Error?) {
-        print("handlePhotosResponse")
-    }
 }
 
 extension TravelLocationMapViewController: MKMapViewDelegate {

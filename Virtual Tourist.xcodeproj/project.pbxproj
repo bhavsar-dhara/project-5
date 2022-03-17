@@ -22,6 +22,7 @@
 		D6A7280427E29CF5006EC2CC /* SearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A7280327E29CF5006EC2CC /* SearchResponse.swift */; };
 		D6A7280927E29D44006EC2CC /* PhotosResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A7280827E29D44006EC2CC /* PhotosResponse.swift */; };
 		D6A7280E27E29DA3006EC2CC /* PhotoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A7280D27E29DA3006EC2CC /* PhotoResponse.swift */; };
+		D6D0EA4127E3FC9000E98800 /* PhotoAlbumViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D0EA4027E3FC9000E98800 /* PhotoAlbumViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		D6A7280327E29CF5006EC2CC /* SearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResponse.swift; sourceTree = "<group>"; };
 		D6A7280827E29D44006EC2CC /* PhotosResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosResponse.swift; sourceTree = "<group>"; };
 		D6A7280D27E29DA3006EC2CC /* PhotoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoResponse.swift; sourceTree = "<group>"; };
+		D6D0EA4027E3FC9000E98800 /* PhotoAlbumViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,6 +168,7 @@
 			isa = PBXGroup;
 			children = (
 				D6A7277727DFD3FC006EC2CC /* TravelLocationMapViewController.swift */,
+				D6D0EA4027E3FC9000E98800 /* PhotoAlbumViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -319,6 +322,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D6D0EA4127E3FC9000E98800 /* PhotoAlbumViewController.swift in Sources */,
 				D6A7280927E29D44006EC2CC /* PhotosResponse.swift in Sources */,
 				D6A727F927E29CCD006EC2CC /* PhotoModel.swift in Sources */,
 				D6A7277E27DFD3FC006EC2CC /* Virtual_Tourist.xcdatamodeld in Sources */,
