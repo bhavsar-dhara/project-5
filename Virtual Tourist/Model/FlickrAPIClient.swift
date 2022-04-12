@@ -38,6 +38,9 @@ class FlickrAPIClient {
             if error != nil {
                 // Handle error...
                 print("Error response received with getPhotosForSelectedLocation http request")
+                DispatchQueue.main.async {
+                    completion (nil, error)
+                }
                 return
             }
             if data != nil {
@@ -65,6 +68,7 @@ class FlickrAPIClient {
         let url = URL(string: img)
         
         guard let imageURL = url else {
+            print("Issue with image URL  before downloadImage http request")
             DispatchQueue.main.async {
                 completion(nil, nil)
             }
@@ -74,12 +78,14 @@ class FlickrAPIClient {
         let request = URLRequest(url: imageURL)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if error != nil {
+                print("Error response received with downloadImage http request")
                 DispatchQueue.main.async {
                     completion(nil, error)
                 }
             }
             
             if data != nil {
+                print("Image data received with downloadImage http request")
                 DispatchQueue.main.async {
                     completion(data, nil)
                 }
