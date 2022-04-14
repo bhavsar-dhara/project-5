@@ -35,13 +35,12 @@ class TravelLocationMapViewController: UIViewController {
         }
         
         mapView.delegate = self
-        
-        // callPersistedLcation() // TODO
+        callPersistedLcation()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // refreshData() // TODO
+        refreshData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -50,7 +49,6 @@ class TravelLocationMapViewController: UIViewController {
     }
     
     @IBAction func longPressOnMap(_ sender: UILongPressGestureRecognizer) {
-        
         if sender.state == .ended {
             // Get the coordinates of the tapped location on the map.
             let locationCoordinate = mapView.convert(sender.location(in: mapView), toCoordinateFrom: mapView)
@@ -81,24 +79,98 @@ class TravelLocationMapViewController: UIViewController {
         location.country = annotation.subtitle
         location.pages = 0
         try? dataController.viewContext.save()
-        let annotationPin = MapModel(name: annotation.title!, latitude: annotation.coordinate.latitude, longitude: annotation.coordinate.longitude, location: "", url: annotation.subtitle!, pin: location)
+        let annotationPin = MapModel(name: annotation.title!, latitude: annotation.coordinate.latitude, longitude: annotation.coordinate.longitude, country: annotation.subtitle!, pin: location)
         self.mapView.addAnnotation(annotationPin)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let photoAlbumViewController = segue.destination as? PhotoAlbumViewController else { return }
+        let pinAnnotation: MapModel = sender as! MapModel
+        photoAlbumViewController.pin = pinAnnotation.pin
+        photoAlbumViewController.dataController = dataController
+    }
+    
+    func refreshData() {
+        // clear all annotations to get new data
+        self.mapView.removeAnnotations(self.mapView.annotations)
+        
+        // fetch all pins
+        let request: NSFetchRequest<Pin> = Pin.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "createdDate", ascending: false)
+        request.sortDescriptors = [sortDescriptor]
+           
+        dataController.viewContext.perform {
+            do {
+                let pins = try self.dataController.viewContext.fetch(request)
+                self.mapView.addAnnotations(pins.map { pin in MapModel(name: pin.locationName!, latitude: pin.latitude, longitude: pin.longitude, country: pin.country!, pin: pin) })
+            } catch {
+                print("Error fetching Pins: \(error)")
+            }
+        }
     }
     
 }
 
-extension TravelLocationMapViewController: MKMapViewDelegate {
+extension TravelLocationMapViewController: MKMapViewDelegate, NSFetchedResultsControllerDelegate {
     
-//    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-//        var view: MKMarkerAnnotationView
-//        // TODO
-//        return view
-//    }
-//
-//    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-//        // TODO
-//    }
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        // var view: MKMarkerAnnotationView
+        let reuseId = "pin"
+        var view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
+    
+        let pinAnnotation = annotation as! MapModel
+        pinAnnotation.title = pinAnnotation.pin.locationName
+        pinAnnotation.subtitle = pinAnnotation.pin.country
+    
+        print("\(String(describing: pinAnnotation.title)) \(String(describing: pinAnnotation.subtitle))")
+   
+        if view == nil {
+            view = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            view!.canShowCallout = true
+            view!.pinTintColor = UIColor.red
+            view!.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
+        } else {
+            view!.annotation = annotation
+        }
+        
+        
+        return view
+    }
 
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        print("mapView on tap function call")
+        mapView.deselectAnnotation(view.annotation, animated: false)
+        guard let _ = view.annotation else {
+                return
+            }
+        if let annotation = view.annotation as? MapModel {
+            self.performSegue(withIdentifier: "showPhotoAlbum", sender: annotation)
+        }
+    }
+    
+    func saveMapLocation() {
+       let mapRegion = [
+        "latitude" : mapView.region.center.latitude,
+        "longitude" : mapView.region.center.longitude,
+        "latitudeDelta" : mapView.region.span.latitudeDelta,
+        "longitudeDelta" : mapView.region.span.longitudeDelta
+       ]
+       UserDefaults.standard.set(mapRegion, forKey: regionKey)
+    }
+
+    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+       self.saveMapLocation()
+    }
+
+    func callPersistedLcation() {
+       if let mapRegin = UserDefaults.standard.dictionary(forKey: regionKey) {
+           let location = mapRegin as! [String: CLLocationDegrees]
+           let center = CLLocationCoordinate2D(latitude: location["latitude"]!, longitude: location["longitude"]!)
+           let span = MKCoordinateSpan(latitudeDelta: location["latitudeDelta"]!, longitudeDelta: location["longitudeDelta"]!)
+           
+           mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: true)
+       }
+    }
 }
 
 extension TravelLocationMapViewController: CLLocationManagerDelegate {
@@ -131,7 +203,7 @@ extension TravelLocationMapViewController: CLLocationManagerDelegate {
 }
 
 private extension MKMapView {
-    func centerToLocation(_ location: CLLocation, regionRadius: CLLocationDistance = 1000) {
+    func centerToLocation(_ location: CLLocation, regionRadius: CLLocationDistance = 100000) {
         let coordinateRegion = MKCoordinateRegion(
             center: location.coordinate,
             latitudinalMeters: regionRadius,

@@ -11,17 +11,16 @@ import MapKit
 class MapModel: NSObject, MKAnnotation {
     
     var title: String?
-    var coordinate: CLLocationCoordinate2D
     var subtitle: String?
-    var info: String
+    var coordinate: CLLocationCoordinate2D
     
     var pin: Pin
     
-    init(name: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, location: String, url: String, pin: Pin) {
+    init(name: String, latitude: Double, longitude: Double, country: String, pin: Pin) {
         self.title = name
+        self.subtitle = country
         self.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        self.subtitle = url // updating based on the code review suggestion
-        self.info = url
         self.pin = pin
+        super.init()
     }
 }

@@ -45,31 +45,25 @@ class DataController {
         }
     }
     
-    static let shared = DataController(modelName: "VirtualTourist")
-    
+    static let shared = DataController(modelName: "Virtual_Tourist")
 }
 
 // MARK: - Autosaving
-
 extension DataController {
     func autoSaveViewContext(interval:TimeInterval = 30) {
         print("autosaving")
-        
         guard interval > 0 else {
             print("cannot set negative autosave interval")
             return
         }
-        
         if viewContext.hasChanges {
             try? viewContext.save()
         }
-        
         DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
             self.autoSaveViewContext(interval: interval)
         }
     }
 }
-
 
 extension DataController {
     func fetchLocation(_ predicate: NSPredicate, sorting: NSSortDescriptor? = nil) throws -> Pin? {

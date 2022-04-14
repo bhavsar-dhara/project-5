@@ -73,14 +73,31 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GOT-qY-bKM">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
+                                <items>
+                                    <navigationItem title="Photo Album" id="hHW-EA-xXv">
+                                        <barButtonItem key="leftBarButtonItem" systemItem="trash" id="f73-5M-p3Q">
+                                            <connections>
+                                                <action selector="OnPressTrash:" destination="9vc-WB-8F3" id="Fxv-cx-3J4"/>
+                                            </connections>
+                                        </barButtonItem>
+                                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="ZHG-8V-uXB">
+                                            <connections>
+                                                <action selector="OnPressDone:" destination="9vc-WB-8F3" id="Ycl-9o-0Qc"/>
+                                            </connections>
+                                        </barButtonItem>
+                                    </navigationItem>
+                                </items>
+                            </navigationBar>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="rEg-gA-kkS">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="219"/>
+                                <rect key="frame" x="0.0" y="56" width="414" height="219"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="219" id="m7D-gs-Q7H"/>
                                 </constraints>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="lCi-ZM-dsj">
-                                <rect key="frame" x="0.0" y="219" width="414" height="527"/>
+                                <rect key="frame" x="0.0" y="275" width="414" height="471"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="IMX-nW-mHf">
                                     <size key="itemSize" width="128" height="128"/>
@@ -120,17 +137,17 @@
                             <constraint firstItem="lCi-ZM-dsj" firstAttribute="trailing" secondItem="6Qi-3F-fO2" secondAttribute="trailing" id="7gf-oa-ZgP"/>
                             <constraint firstItem="xNG-3E-aGF" firstAttribute="top" secondItem="lCi-ZM-dsj" secondAttribute="bottom" id="NJv-T9-gJN"/>
                             <constraint firstItem="lCi-ZM-dsj" firstAttribute="leading" secondItem="6Qi-3F-fO2" secondAttribute="leading" id="Qpx-ce-w7c"/>
+                            <constraint firstItem="GOT-qY-bKM" firstAttribute="top" secondItem="6Qi-3F-fO2" secondAttribute="top" id="Rer-dy-uPG"/>
+                            <constraint firstItem="GOT-qY-bKM" firstAttribute="leading" secondItem="rEg-gA-kkS" secondAttribute="leading" id="Vrz-Es-74Y"/>
+                            <constraint firstItem="GOT-qY-bKM" firstAttribute="trailing" secondItem="rEg-gA-kkS" secondAttribute="trailing" id="X03-yE-dD4"/>
                             <constraint firstItem="rEg-gA-kkS" firstAttribute="bottom" secondItem="lCi-ZM-dsj" secondAttribute="top" id="b0g-q6-cjB"/>
-                            <constraint firstItem="rEg-gA-kkS" firstAttribute="top" secondItem="6Qi-3F-fO2" secondAttribute="top" id="dtb-d6-anW"/>
+                            <constraint firstItem="GOT-qY-bKM" firstAttribute="bottom" secondItem="rEg-gA-kkS" secondAttribute="top" id="bLq-fY-lj7"/>
                             <constraint firstItem="xNG-3E-aGF" firstAttribute="trailing" secondItem="6Qi-3F-fO2" secondAttribute="trailing" id="snK-QT-G1h"/>
                             <constraint firstItem="xNG-3E-aGF" firstAttribute="bottom" secondItem="6Qi-3F-fO2" secondAttribute="bottom" id="tKJ-j9-PUa"/>
                             <constraint firstItem="xNG-3E-aGF" firstAttribute="leading" secondItem="6Qi-3F-fO2" secondAttribute="leading" id="xAL-9o-OeN"/>
                             <constraint firstItem="rEg-gA-kkS" firstAttribute="leading" secondItem="6Qi-3F-fO2" secondAttribute="leading" id="zmZ-TQ-pXg"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Photo Album" id="xYd-bt-Ddk">
-                        <barButtonItem key="leftBarButtonItem" title="OK" image="chevron.backward" catalog="system" id="A83-df-ihX"/>
-                    </navigationItem>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PSk-vH-Dsm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -138,7 +155,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="chevron.backward" catalog="system" width="96" height="128"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
