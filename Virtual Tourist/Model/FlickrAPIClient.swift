@@ -22,7 +22,7 @@ class FlickrAPIClient {
                         "&lat=\(latitude)" +
                         "&lon=\(longitude)" +
                         "&page=\(pageNum)" +
-                        "&per_page=10&radius=25&extras=url_m&format=json&nojsoncallback=1"
+                        "&per_page=10&radius=32&extras=url_m&format=json&nojsoncallback=1"
             }
         }
         
