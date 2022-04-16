@@ -133,7 +133,6 @@ extension TravelLocationMapViewController: MKMapViewDelegate, NSFetchedResultsCo
             view!.annotation = annotation
         }
         
-        
         return view
     }
 

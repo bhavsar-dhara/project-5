@@ -31,7 +31,7 @@ class FlickrAPIClient {
         }
     }
     
-    class func getPhotosForSelectedLocation(latitude: Double, longitude: Double, pageNum: Int, completion: @escaping ([PhotoResponse]?, Error?) -> Void) {
+    class func getPhotosForSelectedLocation(latitude: Double, longitude: Double, pageNum: Int, completion: @escaping (PhotosResponse?, Error?) -> Void) {
         let request = URLRequest(url: Endpoints.searchURLString(latitude, longitude, pageNum).url)
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -51,7 +51,7 @@ class FlickrAPIClient {
                         decoder.decode(SearchResponse.self, from: data!)
                     print("Data decoded")
                     DispatchQueue.main.async {
-                        completion(response.photos.photo, nil)
+                        completion(response.photos, nil)
                     }
                 } catch {
                     print("Error with the data response received or decoded")
