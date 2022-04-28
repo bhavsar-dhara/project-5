@@ -20,8 +20,11 @@ class PhotoAlbumViewController: UIViewController {
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     var dataController: DataController!
-    var fetchedResultsController: NSFetchedResultsController<Photo>!
     var pin: Pin!
+    var downloadedPhotos: [Photo] = []
+    var photoResponse: [PhotoResponse] = []
+    var cellsPerRow = 0
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,86 +33,104 @@ class PhotoAlbumViewController: UIViewController {
             fatalError("No pin ")
         }
         setupCollectionView()
+        
+        downloadedPhotos = fetchFlickrPhotos()
+        if !downloadedPhotos.isEmpty && downloadedPhotos.count > 0 {
+            collectionView.reloadData()
+        } else {
+            downloadPhotoData()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setUpMapView()
-        setupFetchedResultsController()
-        downloadPhotoData()
+//        downloadPhotoData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        fetchedResultsController = nil
     }
     
+    // MARK: UIButton action methods
     @IBAction func OnPressTrash(_ sender: Any) {
         // removeSelectedImages()
         // dismiss(animated: true, completion: nil)
     }
-    
 
     @IBAction func OnPressDone(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
+
+    // MARK: Load new photo collection
+    @IBAction func loadNewCollection(_ sender: UIBarButtonItem) {
+        print("New Collection Button is pressed")
+        newCollectionBtn.isEnabled = false
+        clearPhotos()
+        downloadedPhotos = []
+        downloadedPhotos = []
+        downloadPhotoData()
+        collectionView.reloadData()
+    }
     
+    // MARK: Delete photo collection
+    func clearPhotos() {
+        for photo in downloadedPhotos {
+            dataController.viewContext.delete(photo)
+            do {
+                try self.dataController.viewContext.save()
+            } catch {
+                self.showAlert(title: "Error", message: "There was an error clearing the collection")
+            }
+        }
+    }
+    
+    // MARK: UI methods
     func showAlert(title: String, message: String){
         let alertVC = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alertVC, animated: true, completion: nil)
     }
     
-    // Setting up fetched results controller
-    fileprivate func setupFetchedResultsController() {
-        let fetchRequest:NSFetchRequest<Photo> = Photo.fetchRequest()
-
-        // TODO - check if this filter is working
-        if let pin = pin {
-           let predicate = NSPredicate(format: "pin == %@", pin)
-           fetchRequest.predicate = predicate
-
-           print("Pin details = \(pin.latitude) \(pin.longitude)")
-        }
-        let sortDescriptor = NSSortDescriptor(key: "createdDate", ascending: true)
-        fetchRequest.sortDescriptors = [sortDescriptor]
-
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
-                                                             managedObjectContext: dataController.viewContext,
-                                                             sectionNameKeyPath: nil, cacheName: "photo")
-        fetchedResultsController.delegate = self
-        print(fetchedResultsController.cacheName!)
-        print(fetchedResultsController.fetchedObjects?.count ?? 0)
-
+    func showActivityIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    func hideActivityIndicator() {
+        activityIndicator.stopAnimating()
+        activityIndicator.isHidden = true
+    }
+    
+    // MARK: fetching from core data and downloading from web methods for photos
+    func fetchFlickrPhotos() -> [Photo] {
+        let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+        let predicate = NSPredicate(format: "pin == %@", pin)
+        fetchRequest.predicate = predicate
         do {
-           try fetchedResultsController.performFetch()
+            let result = try dataController.viewContext.fetch(fetchRequest)
+            downloadedPhotos = result
+            hideActivityIndicator()
         } catch {
-           fatalError("The fetch could not be performed: \(error.localizedDescription)")
+            showAlert(title: "Error", message: "There was an error retrieving photos")
+            hideActivityIndicator()
         }
+        return downloadedPhotos
     }
     
     func downloadPhotoData() {
         // manage activity indicator : start running
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-        
-        print("\(String(describing: fetchedResultsController.fetchedObjects?.count))")
-        guard (fetchedResultsController.fetchedObjects?.isEmpty)! else {
-            activityIndicator.isHidden = true
-            activityIndicator.stopAnimating()
-            print("image metadata is already present. no need to re download")
-            return
-        }
-        
+        showActivityIndicator()
+        // call to fetch data from the Flickr API
         FlickrAPIClient.getPhotosForSelectedLocation(latitude: pin.latitude, longitude: pin.longitude, pageNum: 1) { (photosRes, error) in
             if error != nil {
                 print("handlePhotosResponse: ", error!)
+                self.showAlert(title: "Error", message: "There was an error retrieving photos")
             }
             if photosRes != nil {
                 print("handlePhotosResponse: ", photosRes!)
                 let photos = photosRes?.photo
                 let totalPages = photosRes?.pages
-                
                 let pagesCount = Int(self.pin.pages)
                 
                 if photos!.count > 0 {
@@ -123,76 +144,72 @@ class PhotoAlbumViewController: UIViewController {
                             newPhoto.image = nil
                             newPhoto.pin = self.pin
                             newPhoto.imageID = UUID().uuidString
+                            self.downloadedPhotos.append(newPhoto)
                             do {
                                 try self.dataController.viewContext.save()
                             } catch {
                                 print("Unable to save the photo")
                             }
                         }
+                        self.collectionView.reloadData()
                         print("All photos saved to on device")
                     }
+                } else {
+                    self.pin.pages = Int32(Int(totalPages!))
+                    DispatchQueue.main.async {
+                        self.newCollectionBtn.isEnabled = false
+                    }
                 }
-                // manage activity indicator : stop running
-                self.activityIndicator.isHidden = true
-                self.activityIndicator.stopAnimating()
             }
+            // manage activity indicator : stop running
+            self.hideActivityIndicator()
         }
     }
 }
 
 // MARK: UICollectionView (Delegate + DataSource)
-extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func setupCollectionView() {
         // Set up Collection View
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.allowsMultipleSelection = true
-        setupFlowLayout()
-    }
-    
-    func setupFlowLayout() {
-        // Set up the flow layout for the collection view
-        if let flowLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-             let space:CGFloat = 3.0
-             let dimension = (view.frame.size.width - (2 * space)) / 3.0
-             flowLayout.minimumInteritemSpacing = space
-             flowLayout.minimumLineSpacing = space
-             flowLayout.itemSize = CGSize(width: dimension, height: dimension)
-        }
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let count = fetchedResultsController.sections?[section].numberOfObjects ?? 0
-        return count
+        return downloadedPhotos.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        newCollectionBtn.isEnabled = false
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoViewCell.reuseIdentifier, for: indexPath as IndexPath) as! PhotoViewCell
-         guard !(self.fetchedResultsController.fetchedObjects?.isEmpty)! else {
-             print("images are already present.")
-             return cell
-         }
-     
          // fetch core data first
-         let photoData = self.fetchedResultsController.object(at: indexPath)
-
+         let photoData = downloadedPhotos[indexPath.row]
          if photoData.image == nil {
              // run thread
-             newCollectionBtn.isEnabled = false
-             DispatchQueue.global(qos: .background).async {
-                 if let image = try? Data(contentsOf: photoData.imageURL!) {
+             FlickrAPIClient.downloadImage(img: photoData.imageURL!.absoluteString) { (data, error) in
+                 if (data != nil) {
                      DispatchQueue.main.async {
-                         photoData.image = image
+                         photoData.image = data
+                         photoData.pin = self.pin
                          do {
                              try self.dataController.viewContext.save()
-                             
                          } catch {
-                             print("error in saving image data")
+                             print("There was an error saving photos")
                          }
-                         let image = UIImage(data: image)!
-                         cell.setPhoto(imageView: image, sizeFit: true)
+                         DispatchQueue.main.async {
+                             cell.photoViewImage?.image = UIImage(data: data!)
+                         }
                      }
+                 } else {
+                     DispatchQueue.main.async {
+                         self.showAlert(title: "Error", message: "There was an error downloading photos")
+                     }
+                     
+                 }
+                 DispatchQueue.main.async {
+                     self.newCollectionBtn.isEnabled = true
                  }
              }
          } else {
@@ -200,27 +217,28 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
                  let image = UIImage(data: image)!
                  cell.setPhoto(imageView: image, sizeFit: false)
              }
-             
          }
          newCollectionBtn.isEnabled = true
          return cell
     }
-}
-
-// MARK: NSFetchedResultsControllerDelegate
-extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        switch type {
-            case .insert:
-                self.collectionView.insertItems(at: [newIndexPath!])
-            case .delete:
-                self.collectionView.deleteItems(at: [indexPath!])
-            case .update:
-                self.collectionView.reloadItems(at: [indexPath!])
-            default:
-                break
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let flowLayout = collectionViewLayout as! UICollectionViewFlowLayout
+        let totalSpace = flowLayout.sectionInset.left + flowLayout.sectionInset.right + (flowLayout.minimumInteritemSpacing * CGFloat(cellsPerRow - 1))
+        let size = Int((collectionView.bounds.width - totalSpace) / CGFloat(cellsPerRow))
+        return CGSize(width: size, height: size)
+    }
+    
+    override func viewWillLayoutSubviews() {
+        guard let flowLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else {
+            return
         }
+        if UIDevice.current.orientation == .portrait {
+            cellsPerRow = 3
+        } else {
+            cellsPerRow = 5
+        }
+        flowLayout.invalidateLayout()
     }
 }
 
@@ -228,6 +246,10 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
 extension PhotoAlbumViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        guard annotation is MKPointAnnotation else {
+            print("no mkpointannotaions")
+            return nil
+        }
         let reuseId = "pin"
         var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
     
@@ -238,7 +260,6 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
         } else {
             pinView!.annotation = annotation
         }
-        
         pinView?.isSelected = true
         pinView?.isUserInteractionEnabled = false
         return pinView

@@ -32,8 +32,8 @@ class FlickrAPIClient {
     }
     
     class func getPhotosForSelectedLocation(latitude: Double, longitude: Double, pageNum: Int, completion: @escaping (PhotosResponse?, Error?) -> Void) {
-        let request = URLRequest(url: Endpoints.searchURLString(latitude, longitude, pageNum).url)
-        
+        var request = URLRequest(url: Endpoints.searchURLString(latitude, longitude, pageNum).url)
+        request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if error != nil {
                 // Handle error...

@@ -37,6 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
 //        checkIfFirstLaunch()
         print("App Delegate: will finish launching")
+        print("Documents Directory: ", FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).last ?? "Not Found!")
         return true
     }
     
