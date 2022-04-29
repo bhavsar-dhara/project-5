@@ -24,6 +24,8 @@ class PhotoAlbumViewController: UIViewController {
     var downloadedPhotos: [Photo] = []
     var photoResponse: [PhotoResponse] = []
     var cellsPerRow = 0
+    var page: Int = 1
+    var totalPages: Int = 0
     
     
     override func viewDidLoad() {
@@ -32,6 +34,7 @@ class PhotoAlbumViewController: UIViewController {
             showAlert(title: "Can't load photo album", message: "Try Again!!")
             fatalError("No pin ")
         }
+        totalPages = Int(pin.pages)
         setupCollectionView()
         
         downloadedPhotos = fetchFlickrPhotos()
@@ -53,22 +56,22 @@ class PhotoAlbumViewController: UIViewController {
     }
     
     // MARK: UIButton action methods
-    @IBAction func OnPressTrash(_ sender: Any) {
-        // removeSelectedImages()
-        // dismiss(animated: true, completion: nil)
-    }
-
-    @IBAction func OnPressDone(_ sender: Any) {
+    @IBAction func onPressDone(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
 
-    // MARK: Load new photo collection
-    @IBAction func loadNewCollection(_ sender: UIBarButtonItem) {
+    // MARK: Load new photo collection UIButton action method
+    @IBAction func loadNewCollection(_ sender: Any) {
         print("New Collection Button is pressed")
         newCollectionBtn.isEnabled = false
+        if downloadedPhotos != nil {
+            // assign page # if there are existing downloaded images
+            page = Int.random(in: 1...totalPages)
+        }
         clearPhotos()
         downloadedPhotos = []
-        downloadedPhotos = []
+        photoResponse = []
+        print("randomPage == ", page)
         downloadPhotoData()
         collectionView.reloadData()
     }
@@ -122,7 +125,7 @@ class PhotoAlbumViewController: UIViewController {
         // manage activity indicator : start running
         showActivityIndicator()
         // call to fetch data from the Flickr API
-        FlickrAPIClient.getPhotosForSelectedLocation(latitude: pin.latitude, longitude: pin.longitude, pageNum: 1) { (photosRes, error) in
+        FlickrAPIClient.getPhotosForSelectedLocation(latitude: pin.latitude, longitude: pin.longitude, pageNum: page) { (photosRes, error) in
             if error != nil {
                 print("handlePhotosResponse: ", error!)
                 self.showAlert(title: "Error", message: "There was an error retrieving photos")
@@ -131,6 +134,10 @@ class PhotoAlbumViewController: UIViewController {
                 print("handlePhotosResponse: ", photosRes!)
                 let photos = photosRes?.photo
                 let totalPages = photosRes?.pages
+                self.totalPages = totalPages!
+                let randomPage = Int.random(in: 1...totalPages!)
+                self.page = randomPage
+                print("randomPage = ", self.page)
                 let pagesCount = Int(self.pin.pages)
                 
                 if photos!.count > 0 {

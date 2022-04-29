@@ -80,14 +80,9 @@
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
                                 <items>
                                     <navigationItem title="Photo Album" id="hHW-EA-xXv">
-                                        <barButtonItem key="leftBarButtonItem" systemItem="trash" id="f73-5M-p3Q">
-                                            <connections>
-                                                <action selector="OnPressTrash:" destination="9vc-WB-8F3" id="Fxv-cx-3J4"/>
-                                            </connections>
-                                        </barButtonItem>
                                         <barButtonItem key="rightBarButtonItem" systemItem="done" id="ZHG-8V-uXB">
                                             <connections>
-                                                <action selector="OnPressDone:" destination="9vc-WB-8F3" id="Ycl-9o-0Qc"/>
+                                                <action selector="onPressDone:" destination="9vc-WB-8F3" id="UFC-lm-Xx8"/>
                                             </connections>
                                         </barButtonItem>
                                     </navigationItem>
@@ -134,6 +129,9 @@
                                     <constraint firstAttribute="height" constant="62" id="Kw4-rc-RJo"/>
                                 </constraints>
                                 <state key="normal" title="New Collection"/>
+                                <connections>
+                                    <action selector="loadNewCollection:" destination="9vc-WB-8F3" eventType="touchDown" id="nef-uN-oZU"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Qi-3F-fO2"/>
