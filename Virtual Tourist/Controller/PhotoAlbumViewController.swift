@@ -37,6 +37,9 @@ class PhotoAlbumViewController: UIViewController {
         totalPages = Int(pin.pages)
         setupCollectionView()
         
+        // add activity indicator to main view
+        self.view.addSubview(activityIndicator)
+        
         downloadedPhotos = fetchFlickrPhotos()
         if !downloadedPhotos.isEmpty && downloadedPhotos.count > 0 {
             collectionView.reloadData()
@@ -48,7 +51,6 @@ class PhotoAlbumViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setUpMapView()
-//        downloadPhotoData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -64,8 +66,8 @@ class PhotoAlbumViewController: UIViewController {
     @IBAction func loadNewCollection(_ sender: Any) {
         print("New Collection Button is pressed")
         newCollectionBtn.isEnabled = false
-        if downloadedPhotos != nil {
-            // assign page # if there are existing downloaded images
+        if !downloadedPhotos.isEmpty {
+            // assign random page# only if there are existing downloaded images
             page = Int.random(in: 1...totalPages)
         }
         clearPhotos()
@@ -107,6 +109,7 @@ class PhotoAlbumViewController: UIViewController {
     
     // MARK: fetching from core data and downloading from web methods for photos
     func fetchFlickrPhotos() -> [Photo] {
+        showActivityIndicator()
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         let predicate = NSPredicate(format: "pin == %@", pin)
         fetchRequest.predicate = predicate
