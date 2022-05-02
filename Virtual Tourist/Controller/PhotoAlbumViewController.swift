@@ -229,6 +229,22 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
          return cell
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        // print("onClick: ", indexPath)
+        // delete from the core data
+        dataController.viewContext.delete(downloadedPhotos[indexPath.item])
+        do {
+            try self.dataController.viewContext.save()
+        } catch {
+            self.showAlert(title: "Error", message: "There was an error clearing the collection")
+        }
+        // delete from the array variable
+        downloadedPhotos.remove(at: indexPath.item)
+        // delete from the view
+        self.collectionView.deleteItems(at: [indexPath])
+        self.collectionView.reloadData()
+    }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let flowLayout = collectionViewLayout as! UICollectionViewFlowLayout
         let totalSpace = flowLayout.sectionInset.left + flowLayout.sectionInset.right + (flowLayout.minimumInteritemSpacing * CGFloat(cellsPerRow - 1))
