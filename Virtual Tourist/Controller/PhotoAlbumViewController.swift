@@ -12,12 +12,12 @@ import UIKit
 import CoreData
 import MapKit
 
-class PhotoAlbumViewController: UIViewController {
+class PhotoAlbumViewController: BaseViewController {
     
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var newCollectionBtn: UIButton!
-    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+//    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     var dataController: DataController!
     var pin: Pin!
@@ -38,7 +38,7 @@ class PhotoAlbumViewController: UIViewController {
         setupCollectionView()
         
         // add activity indicator to main view
-        self.view.addSubview(activityIndicator)
+//        self.view.addSubview(activityIndicator)
         
         downloadedPhotos = fetchFlickrPhotos()
         if !downloadedPhotos.isEmpty && downloadedPhotos.count > 0 {
@@ -64,7 +64,7 @@ class PhotoAlbumViewController: UIViewController {
 
     // MARK: Load new photo collection UIButton action method
     @IBAction func loadNewCollection(_ sender: Any) {
-        print("New Collection Button is pressed")
+        debugPrint("New Collection Button is pressed")
         newCollectionBtn.isEnabled = false
         if !downloadedPhotos.isEmpty {
             // assign random page# only if there are existing downloaded images
@@ -73,7 +73,7 @@ class PhotoAlbumViewController: UIViewController {
         clearPhotos()
         downloadedPhotos = []
         photoResponse = []
-        print("randomPage == ", page)
+        debugPrint("randomPage == ", page)
         downloadPhotoData()
         collectionView.reloadData()
     }
@@ -90,22 +90,22 @@ class PhotoAlbumViewController: UIViewController {
         }
     }
     
-    // MARK: UI methods
-    func showAlert(title: String, message: String){
-        let alertVC = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertVC.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        present(alertVC, animated: true, completion: nil)
-    }
-    
-    func showActivityIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-    
-    func hideActivityIndicator() {
-        activityIndicator.stopAnimating()
-        activityIndicator.isHidden = true
-    }
+//    // MARK: UI methods
+//    func showAlert(title: String, message: String){
+//        let alertVC = UIAlertController(title: title, message: message, preferredStyle: .alert)
+//        alertVC.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//        present(alertVC, animated: true, completion: nil)
+//    }
+//
+//    func showActivityIndicator() {
+//        activityIndicator.isHidden = false
+//        activityIndicator.startAnimating()
+//    }
+//
+//    func hideActivityIndicator() {
+//        activityIndicator.stopAnimating()
+//        activityIndicator.isHidden = true
+//    }
     
     // MARK: fetching from core data and downloading from web methods for photos
     func fetchFlickrPhotos() -> [Photo] {
@@ -130,17 +130,17 @@ class PhotoAlbumViewController: UIViewController {
         // call to fetch data from the Flickr API
         FlickrAPIClient.getPhotosForSelectedLocation(latitude: pin.latitude, longitude: pin.longitude, pageNum: page) { (photosRes, error) in
             if error != nil {
-                print("handlePhotosResponse: ", error!)
+                print("handlePhotosResponse: Error ", error!)
                 self.showAlert(title: "Error", message: "There was an error retrieving photos")
             }
             if photosRes != nil {
-                print("handlePhotosResponse: ", photosRes!)
+                debugPrint("handlePhotosResponse: ", photosRes!)
                 let photos = photosRes?.photo
                 let totalPages = photosRes?.pages
                 self.totalPages = totalPages!
                 let randomPage = Int.random(in: 1...totalPages!)
                 self.page = randomPage
-                print("randomPage = ", self.page)
+                debugPrint("randomPage = ", self.page)
                 let pagesCount = Int(self.pin.pages)
                 
                 if photos!.count > 0 {
@@ -158,11 +158,11 @@ class PhotoAlbumViewController: UIViewController {
                             do {
                                 try self.dataController.viewContext.save()
                             } catch {
-                                print("Unable to save the photo")
+                                print("Error: Unable to save the photo")
                             }
                         }
                         self.collectionView.reloadData()
-                        print("All photos saved to on device")
+                        debugPrint("All photos saved to on device")
                     }
                 } else {
                     self.pin.pages = Int32(Int(totalPages!))
@@ -233,7 +233,7 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        // print("onClick: ", indexPath)
+        // debugPrint("onClick: ", indexPath)
         // delete from the core data
         dataController.viewContext.delete(downloadedPhotos[indexPath.item])
         do {
@@ -273,7 +273,7 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         guard annotation is MKPointAnnotation else {
-            print("no mkpointannotaions")
+            debugPrint("no mkpointannotaions")
             return nil
         }
         let reuseId = "pin"

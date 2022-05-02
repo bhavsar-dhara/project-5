@@ -11,7 +11,7 @@ import MapKit
 import CoreLocation
 import CoreData
 
-class TravelLocationMapViewController: UIViewController {
+class TravelLocationMapViewController: BaseViewController {
     
     @IBOutlet weak var mapView: MKMapView!
     let locationManager = CLLocationManager()
@@ -34,7 +34,7 @@ class TravelLocationMapViewController: UIViewController {
             locationManager.startUpdatingLocation()
         }
         
-        mapView.delegate = self
+        // mapView.delegate = self
         callPersistedLcation()
     }
     
@@ -45,14 +45,14 @@ class TravelLocationMapViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
+        saveMapLocation()
     }
     
     @IBAction func longPressOnMap(_ sender: UILongPressGestureRecognizer) {
-        if sender.state == .ended {
+        if sender.state == .began {
             // Get the coordinates of the tapped location on the map.
             let locationCoordinate = mapView.convert(sender.location(in: mapView), toCoordinateFrom: mapView)
-            print("On long press: ", locationCoordinate)
+            debugPrint("On long press: ", locationCoordinate)
             saveGeoCoordination(from: locationCoordinate)
         }
     }
@@ -122,7 +122,7 @@ extension TravelLocationMapViewController: MKMapViewDelegate, NSFetchedResultsCo
         pinAnnotation.title = pinAnnotation.pin.locationName
         pinAnnotation.subtitle = pinAnnotation.pin.country
     
-        print("\(String(describing: pinAnnotation.title)) \(String(describing: pinAnnotation.subtitle))")
+        debugPrint("\(String(describing: pinAnnotation.title)) \(String(describing: pinAnnotation.subtitle))")
    
         if view == nil {
             view = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
@@ -137,7 +137,7 @@ extension TravelLocationMapViewController: MKMapViewDelegate, NSFetchedResultsCo
     }
 
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        print("mapView on tap function call")
+        debugPrint("mapView on tap function call")
         mapView.deselectAnnotation(view.annotation, animated: false)
         guard let _ = view.annotation else {
                 return
@@ -147,6 +147,12 @@ extension TravelLocationMapViewController: MKMapViewDelegate, NSFetchedResultsCo
         }
     }
     
+    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+        
+       self.saveMapLocation()
+    }
+    
+    // MARK: methods to save and fetch the last open location on map
     func saveMapLocation() {
        let mapRegion = [
         "latitude" : mapView.region.center.latitude,
@@ -155,10 +161,6 @@ extension TravelLocationMapViewController: MKMapViewDelegate, NSFetchedResultsCo
         "longitudeDelta" : mapView.region.span.longitudeDelta
        ]
        UserDefaults.standard.set(mapRegion, forKey: regionKey)
-    }
-
-    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
-       self.saveMapLocation()
     }
 
     func callPersistedLcation() {
@@ -177,15 +179,15 @@ extension TravelLocationMapViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse {
 //            locationManager.requestLocation()
-            print("Location Authorization status = ", status)
+            debugPrint("Location Authorization status = ", status)
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
-            print("Found user's location: \(location)")
+            debugPrint("Found user's location: \(location)")
             guard let locValue: CLLocationCoordinate2D = manager.location?.coordinate else { return }
-            print("locations = \(locValue.latitude) \(locValue.longitude)")
+            debugPrint("locations = \(locValue.latitude) \(locValue.longitude)")
             UserDefaults.standard.setValue(locValue.latitude, forKey: "Latitude")
             UserDefaults.standard.setValue(locValue.longitude, forKey: "Longitude")
             UserDefaults.standard.synchronize()

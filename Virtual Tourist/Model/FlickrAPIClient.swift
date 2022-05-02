@@ -44,12 +44,12 @@ class FlickrAPIClient {
                 return
             }
             if data != nil {
-                print(String(data: data!, encoding: .utf8)!)
+                debugPrint(String(data: data!, encoding: .utf8)!)
                 let decoder = JSONDecoder()
                 do{
                     let response = try
                         decoder.decode(SearchResponse.self, from: data!)
-                    print("Data decoded")
+                    debugPrint("Data decoded")
                     DispatchQueue.main.async {
                         completion(response.photos, nil)
                     }
@@ -68,7 +68,7 @@ class FlickrAPIClient {
         let url = URL(string: img)
         
         guard let imageURL = url else {
-            print("Issue with image URL  before downloadImage http request")
+            print("Issue with image URL before downloadImage http request")
             DispatchQueue.main.async {
                 completion(nil, nil)
             }
@@ -85,7 +85,7 @@ class FlickrAPIClient {
             }
             
             if data != nil {
-                print("Image data received with downloadImage http request")
+                debugPrint("Image data received with downloadImage http request")
                 DispatchQueue.main.async {
                     completion(data, nil)
                 }

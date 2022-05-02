@@ -37,6 +37,7 @@
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="0CF-9w-SfC">
                                 <rect key="frame" x="0.0" y="88" width="414" height="774"/>
                                 <connections>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="ThQ-1O-2E7"/>
                                     <outletCollection property="gestureRecognizers" destination="t8D-EM-Yfa" appends="YES" id="DDI-uc-1lO"/>
                                 </connections>
                             </mapView>
@@ -73,9 +74,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="RhK-nO-7eD">
-                                <rect key="frame" x="197" y="394" width="20" height="20"/>
-                            </activityIndicatorView>
                             <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GOT-qY-bKM">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="56"/>
                                 <items>
@@ -138,14 +136,12 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="rEg-gA-kkS" firstAttribute="trailing" secondItem="6Qi-3F-fO2" secondAttribute="trailing" id="1zF-D6-ZKn"/>
-                            <constraint firstItem="RhK-nO-7eD" firstAttribute="centerY" secondItem="6Qi-3F-fO2" secondAttribute="centerY" id="5dz-tm-Znk"/>
                             <constraint firstItem="lCi-ZM-dsj" firstAttribute="trailing" secondItem="6Qi-3F-fO2" secondAttribute="trailing" id="7gf-oa-ZgP"/>
                             <constraint firstItem="xNG-3E-aGF" firstAttribute="top" secondItem="lCi-ZM-dsj" secondAttribute="bottom" id="NJv-T9-gJN"/>
                             <constraint firstItem="lCi-ZM-dsj" firstAttribute="leading" secondItem="6Qi-3F-fO2" secondAttribute="leading" id="Qpx-ce-w7c"/>
                             <constraint firstItem="GOT-qY-bKM" firstAttribute="top" secondItem="6Qi-3F-fO2" secondAttribute="top" id="Rer-dy-uPG"/>
                             <constraint firstItem="GOT-qY-bKM" firstAttribute="leading" secondItem="rEg-gA-kkS" secondAttribute="leading" id="Vrz-Es-74Y"/>
                             <constraint firstItem="GOT-qY-bKM" firstAttribute="trailing" secondItem="rEg-gA-kkS" secondAttribute="trailing" id="X03-yE-dD4"/>
-                            <constraint firstItem="RhK-nO-7eD" firstAttribute="centerX" secondItem="6Qi-3F-fO2" secondAttribute="centerX" id="Yri-cr-AQu"/>
                             <constraint firstItem="rEg-gA-kkS" firstAttribute="bottom" secondItem="lCi-ZM-dsj" secondAttribute="top" id="b0g-q6-cjB"/>
                             <constraint firstItem="GOT-qY-bKM" firstAttribute="bottom" secondItem="rEg-gA-kkS" secondAttribute="top" id="bLq-fY-lj7"/>
                             <constraint firstItem="xNG-3E-aGF" firstAttribute="trailing" secondItem="6Qi-3F-fO2" secondAttribute="trailing" id="snK-QT-G1h"/>
@@ -155,7 +151,6 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="activityIndicator" destination="RhK-nO-7eD" id="AdW-Zg-8nj"/>
                         <outlet property="collectionView" destination="lCi-ZM-dsj" id="JYF-Cl-sQE"/>
                         <outlet property="mapView" destination="rEg-gA-kkS" id="u57-13-TpB"/>
                         <outlet property="newCollectionBtn" destination="xNG-3E-aGF" id="JIG-Eg-Ta7"/>

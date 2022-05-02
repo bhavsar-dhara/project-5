@@ -16,12 +16,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func checkIfFirstLaunch() {
         if UserDefaults.standard.bool(forKey: "HasLaunchedBefore") {
-            print("App has launched before")
+            debugPrint("App has launched before")
+            // TODO -> save the coordinates of the map view
         } else {
-            print("This is the first launch ever!")
+            debugPrint("This is the first launch ever!")
             UserDefaults.standard.set(true, forKey: "HasLaunchedBefore")
-            UserDefaults.standard.set(0.0, forKey: "Latitude")
-            UserDefaults.standard.set(0.0, forKey: "Longitude")
             UserDefaults.standard.synchronize()
         }
     }
@@ -35,9 +34,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let mapview = navigationController.topViewController as! TravelLocationMapViewController
         mapview.dataController = (UIApplication.shared.delegate as? AppDelegate)?.dataController
         
-//        checkIfFirstLaunch()
-        print("App Delegate: will finish launching")
-        print("Documents Directory: ", FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).last ?? "Not Found!")
+        checkIfFirstLaunch()
+        debugPrint("App Delegate: will finish launching")
+        debugPrint("Documents Directory: ", FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).last ?? "Not Found!")
         return true
     }
     
