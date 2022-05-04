@@ -148,28 +148,30 @@ extension TravelLocationMapViewController: MKMapViewDelegate, NSFetchedResultsCo
     }
     
     func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
-        
-       self.saveMapLocation()
+//        debugPrint("mapViewDidChangeVisibleRegion")
+        self.saveMapLocation()
     }
     
     // MARK: methods to save and fetch the last open location on map
     func saveMapLocation() {
-       let mapRegion = [
-        "latitude" : mapView.region.center.latitude,
-        "longitude" : mapView.region.center.longitude,
-        "latitudeDelta" : mapView.region.span.latitudeDelta,
-        "longitudeDelta" : mapView.region.span.longitudeDelta
-       ]
-       UserDefaults.standard.set(mapRegion, forKey: regionKey)
+//        debugPrint("saveMapLocation")
+        let mapRegion = [
+            "latitude" : mapView.region.center.latitude,
+            "longitude" : mapView.region.center.longitude,
+            "latitudeDelta" : mapView.region.span.latitudeDelta,
+            "longitudeDelta" : mapView.region.span.longitudeDelta
+        ]
+        UserDefaults.standard.set(mapRegion, forKey: regionKey)
     }
 
     func callPersistedLcation() {
-       if let mapRegin = UserDefaults.standard.dictionary(forKey: regionKey) {
-           let location = mapRegin as! [String: CLLocationDegrees]
-           let center = CLLocationCoordinate2D(latitude: location["latitude"]!, longitude: location["longitude"]!)
-           let span = MKCoordinateSpan(latitudeDelta: location["latitudeDelta"]!, longitudeDelta: location["longitudeDelta"]!)
+//        debugPrint("callPersistedLocation")
+        if let mapRegin = UserDefaults.standard.dictionary(forKey: regionKey) {
+            let location = mapRegin as! [String: CLLocationDegrees]
+            let center = CLLocationCoordinate2D(latitude: location["latitude"]!, longitude: location["longitude"]!)
+            let span = MKCoordinateSpan(latitudeDelta: location["latitudeDelta"]!, longitudeDelta: location["longitudeDelta"]!)
            
-           mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: true)
+            mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: true)
        }
     }
 }
@@ -184,17 +186,18 @@ extension TravelLocationMapViewController: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.first {
-            debugPrint("Found user's location: \(location)")
-            guard let locValue: CLLocationCoordinate2D = manager.location?.coordinate else { return }
-            debugPrint("locations = \(locValue.latitude) \(locValue.longitude)")
-            UserDefaults.standard.setValue(locValue.latitude, forKey: "Latitude")
-            UserDefaults.standard.setValue(locValue.longitude, forKey: "Longitude")
-            UserDefaults.standard.synchronize()
-            mapView.centerToLocation(CLLocation(latitude: locValue.latitude, longitude: locValue.longitude))
-//            let region = MKCoordinateRegion(center: location.coordinate, span: span)
-//            mapView.setRegion(region, animated: true)
-        }
+        callPersistedLcation()
+//        if let location = locations.first {
+//            debugPrint("Found user's location: \(location)")
+//            guard let locValue: CLLocationCoordinate2D = manager.location?.coordinate else { return }
+//            debugPrint("locations = \(locValue.latitude) \(locValue.longitude)")
+//            UserDefaults.standard.setValue(locValue.latitude, forKey: "Latitude")
+//            UserDefaults.standard.setValue(locValue.longitude, forKey: "Longitude")
+//            UserDefaults.standard.synchronize()
+//            mapView.centerToLocation(CLLocation(latitude: locValue.latitude, longitude: locValue.longitude))
+////            let region = MKCoordinateRegion(center: location.coordinate, span: span)
+////            mapView.setRegion(region, animated: true)
+//        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

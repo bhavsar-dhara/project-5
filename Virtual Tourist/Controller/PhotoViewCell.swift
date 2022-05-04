@@ -11,7 +11,7 @@ import UIKit
 class PhotoViewCell: UICollectionViewCell {
     
     @IBOutlet weak var photoViewImage: UIImageView!
-    
+
     static let reuseIdentifier = "PhotoCell"
     let sectionInsets = UIEdgeInsets(
       top: -5.0,

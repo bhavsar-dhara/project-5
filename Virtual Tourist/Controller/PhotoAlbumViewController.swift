@@ -26,6 +26,8 @@ class PhotoAlbumViewController: BaseViewController {
     var cellsPerRow = 0
     var page: Int = 1
     var totalPages: Int = 0
+    let perPage: Int = 10
+    var pageNum: Int = 0
     
     
     override func viewDidLoad() {
@@ -67,8 +69,9 @@ class PhotoAlbumViewController: BaseViewController {
         debugPrint("New Collection Button is pressed")
         newCollectionBtn.isEnabled = false
         if !downloadedPhotos.isEmpty {
+            pageNum = min(totalPages, 4000/perPage)
             // assign random page# only if there are existing downloaded images
-            page = Int.random(in: 1...totalPages)
+            page = Int.random(in: 1...pageNum)
         }
         clearPhotos()
         downloadedPhotos = []
@@ -89,23 +92,6 @@ class PhotoAlbumViewController: BaseViewController {
             }
         }
     }
-    
-//    // MARK: UI methods
-//    func showAlert(title: String, message: String){
-//        let alertVC = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//        alertVC.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-//        present(alertVC, animated: true, completion: nil)
-//    }
-//
-//    func showActivityIndicator() {
-//        activityIndicator.isHidden = false
-//        activityIndicator.startAnimating()
-//    }
-//
-//    func hideActivityIndicator() {
-//        activityIndicator.stopAnimating()
-//        activityIndicator.isHidden = true
-//    }
     
     // MARK: fetching from core data and downloading from web methods for photos
     func fetchFlickrPhotos() -> [Photo] {
@@ -138,7 +124,8 @@ class PhotoAlbumViewController: BaseViewController {
                 let photos = photosRes?.photo
                 let totalPages = photosRes?.pages
                 self.totalPages = totalPages!
-                let randomPage = Int.random(in: 1...totalPages!)
+                self.pageNum = min(totalPages!, 4000/self.perPage)
+                let randomPage = Int.random(in: 1...self.pageNum)
                 self.page = randomPage
                 debugPrint("randomPage = ", self.page)
                 let pagesCount = Int(self.pin.pages)
@@ -193,43 +180,60 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         newCollectionBtn.isEnabled = false
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoViewCell.reuseIdentifier, for: indexPath as IndexPath) as! PhotoViewCell
-         // fetch core data first
-         let photoData = downloadedPhotos[indexPath.row]
-         if photoData.image == nil {
-             // run thread
-             FlickrAPIClient.downloadImage(img: photoData.imageURL!.absoluteString) { (data, error) in
-                 if (data != nil) {
-                     DispatchQueue.main.async {
-                         photoData.image = data
-                         photoData.pin = self.pin
-                         do {
-                             try self.dataController.viewContext.save()
-                         } catch {
-                             print("There was an error saving photos")
+        
+        debugPrint("downloadedPhotos.count = ", downloadedPhotos.count)
+        debugPrint("indexPath.row = ", indexPath.row)
+        
+        if indexPath.row == downloadedPhotos.count {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoViewCell.reuseIdentifier, for: indexPath as IndexPath) as! PhotoViewCell
+            // start loading spinner
+    //        cell.loadingSpinner.color = .white
+    //        cell.contentView.bringSubviewToFront(cell.loadingSpinner)
+    //        cell.loadingSpinner.startAnimating()
+             // fetch core data first
+            let photoData = downloadedPhotos[indexPath.row]
+            if photoData.image == nil {
+                // run thread
+                FlickrAPIClient.downloadImage(img: photoData.imageURL!.absoluteString) { (data, error) in
+                    if (data != nil) {
+                        DispatchQueue.main.async {
+                            photoData.image = data
+                            photoData.pin = self.pin
+                            do {
+                                try self.dataController.viewContext.save()
+                            } catch {
+                                print("There was an error saving photos")
+                            }
+                            DispatchQueue.main.async {
+                                cell.photoViewImage?.image = UIImage(data: data!)
+                            }
                          }
+                     } else {
                          DispatchQueue.main.async {
-                             cell.photoViewImage?.image = UIImage(data: data!)
+                             self.showAlert(title: "Error", message: "There was an error downloading photos")
                          }
+                         
                      }
-                 } else {
                      DispatchQueue.main.async {
-                         self.showAlert(title: "Error", message: "There was an error downloading photos")
+                         self.newCollectionBtn.isEnabled = true
                      }
-                     
-                 }
-                 DispatchQueue.main.async {
-                     self.newCollectionBtn.isEnabled = true
-                 }
-             }
-         } else {
-           if let image = photoData.image {
-                 let image = UIImage(data: image)!
-                 cell.setPhoto(imageView: image, sizeFit: false)
-             }
-         }
-         newCollectionBtn.isEnabled = true
-         return cell
+                }
+            } else {
+                if let image = photoData.image {
+                    let image = UIImage(data: image)!
+                    cell.setPhoto(imageView: image, sizeFit: false)
+                }
+            }
+            newCollectionBtn.isEnabled = true
+            // stop loading spinner
+    //        cell.loadingSpinner.stopAnimating()
+            return cell
+        } else {
+            debugPrint("loading spinner visible")
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: IndicatorCell.reuseIdentifier, for: indexPath) as! IndicatorCell
+            cell.loadingSpinner.startAnimating()
+            return cell
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
