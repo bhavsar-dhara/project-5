@@ -69,6 +69,8 @@ class PhotoAlbumViewController: BaseViewController {
         debugPrint("New Collection Button is pressed")
         newCollectionBtn.isEnabled = false
         if !downloadedPhotos.isEmpty {
+            // MODIFICATION
+            // as per the review obtained to fetch new pics on refresh from flickr
             pageNum = min(totalPages, 4000/perPage)
             // assign random page# only if there are existing downloaded images
             page = Int.random(in: 1...pageNum)
@@ -149,6 +151,7 @@ class PhotoAlbumViewController: BaseViewController {
                             }
                         }
                         self.collectionView.reloadData()
+                        // MODIFICATION
                         debugPrint("All photos saved to on device")
                     }
                 } else {
@@ -184,56 +187,48 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
         debugPrint("downloadedPhotos.count = ", downloadedPhotos.count)
         debugPrint("indexPath.row = ", indexPath.row)
         
-        if indexPath.row == downloadedPhotos.count {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoViewCell.reuseIdentifier, for: indexPath as IndexPath) as! PhotoViewCell
-            // start loading spinner
-    //        cell.loadingSpinner.color = .white
-    //        cell.contentView.bringSubviewToFront(cell.loadingSpinner)
-    //        cell.loadingSpinner.startAnimating()
-             // fetch core data first
-            let photoData = downloadedPhotos[indexPath.row]
-            if photoData.image == nil {
-                // run thread
-                FlickrAPIClient.downloadImage(img: photoData.imageURL!.absoluteString) { (data, error) in
-                    if (data != nil) {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoViewCell.reuseIdentifier, for: indexPath as IndexPath) as! PhotoViewCell
+        // MODIFICATION
+        // start loading spinner
+        cell.loadingSpinner.startAnimating()
+         // fetch core data first
+        let photoData = downloadedPhotos[indexPath.row]
+        if photoData.image == nil {
+            // run thread
+            FlickrAPIClient.downloadImage(img: photoData.imageURL!.absoluteString) { (data, error) in
+                if (data != nil) {
+                    DispatchQueue.main.async {
+                        photoData.image = data
+                        photoData.pin = self.pin
+                        do {
+                            try self.dataController.viewContext.save()
+                        } catch {
+                            print("There was an error saving photos")
+                        }
                         DispatchQueue.main.async {
-                            photoData.image = data
-                            photoData.pin = self.pin
-                            do {
-                                try self.dataController.viewContext.save()
-                            } catch {
-                                print("There was an error saving photos")
-                            }
-                            DispatchQueue.main.async {
-                                cell.photoViewImage?.image = UIImage(data: data!)
-                            }
-                         }
-                     } else {
-                         DispatchQueue.main.async {
-                             self.showAlert(title: "Error", message: "There was an error downloading photos")
-                         }
-                         
+                            cell.photoViewImage?.image = UIImage(data: data!)
+                        }
                      }
+                 } else {
                      DispatchQueue.main.async {
-                         self.newCollectionBtn.isEnabled = true
+                         self.showAlert(title: "Error", message: "There was an error downloading photos")
                      }
-                }
-            } else {
-                if let image = photoData.image {
-                    let image = UIImage(data: image)!
-                    cell.setPhoto(imageView: image, sizeFit: false)
-                }
+                     
+                 }
+                 DispatchQueue.main.async {
+                     self.newCollectionBtn.isEnabled = true
+                 }
             }
-            newCollectionBtn.isEnabled = true
-            // stop loading spinner
-    //        cell.loadingSpinner.stopAnimating()
-            return cell
         } else {
-            debugPrint("loading spinner visible")
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: IndicatorCell.reuseIdentifier, for: indexPath) as! IndicatorCell
-            cell.loadingSpinner.startAnimating()
-            return cell
+            if let image = photoData.image {
+                let image = UIImage(data: image)!
+                cell.setPhoto(imageView: image, sizeFit: false)
+            }
         }
+        newCollectionBtn.isEnabled = true
+        // stop loading spinner
+        cell.loadingSpinner.stopAnimating()
+        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
