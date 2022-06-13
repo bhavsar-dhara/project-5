@@ -39,9 +39,6 @@ class PhotoAlbumViewController: BaseViewController {
         totalPages = Int(pin.pages)
         setupCollectionView()
         
-        // add activity indicator to main view
-//        self.view.addSubview(activityIndicator)
-        
         downloadedPhotos = fetchFlickrPhotos()
         if !downloadedPhotos.isEmpty && downloadedPhotos.count > 0 {
             collectionView.reloadData()
@@ -53,10 +50,6 @@ class PhotoAlbumViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setUpMapView()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
     }
     
     // MARK: UIButton action methods
@@ -191,6 +184,7 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
         // MODIFICATION
         // start loading spinner
         cell.loadingSpinner.startAnimating()
+        // added the placeholder image in the storyboard itself 
          // fetch core data first
         let photoData = downloadedPhotos[indexPath.row]
         if photoData.image == nil {
