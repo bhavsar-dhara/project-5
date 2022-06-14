@@ -184,7 +184,9 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
         // MODIFICATION
         // start loading spinner
         cell.loadingSpinner.startAnimating()
-        // added the placeholder image in the storyboard itself 
+        // added the placeholder image in the storyboard itself
+        // ADDING THE PLACEHOLDER IMAGE VIA CODE BELOW
+        cell.photoViewImage?.image = UIImage(systemName: "photo")
          // fetch core data first
         let photoData = downloadedPhotos[indexPath.row]
         if photoData.image == nil {
